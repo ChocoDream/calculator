@@ -1,3 +1,17 @@
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAZ3LP6wcliNJOrpvKfI3yntmOHDQxzXjU",
+  authDomain: "math-calculator-d6d9c.firebaseapp.com",
+  projectId: "math-calculator-d6d9c",
+  storageBucket: "math-calculator-d6d9c.appspot.com",
+  messagingSenderId: "148637567422",
+  appId: "1:148637567422:web:41100890b0d84cd83d11ef",
+};
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
+
 new Vue({
   el: "#app",
   data() {
@@ -8,6 +22,7 @@ new Vue({
       operatorClicked: true,
       history: [],
       autosave: false,
+      input: "",
     };
   },
   methods: {
@@ -100,11 +115,12 @@ new Vue({
     },
 
     //What we added
-    addToHistory(logList, current, answer) {
+    async addToHistory(logList, current, answer) {
       const display = `${logList} ${current} = ${answer}`;
       const numbers = this.getNumbers(logList, current);
       const operators = [...logList.match(/[+-/*]/g)];
       const answerObject = { display, answer, numbers, operators };
+      await this.saveToFirebase(answerObject);
       this.history.push(answerObject);
     },
 
@@ -113,5 +129,62 @@ new Vue({
       list.push(current);
       return list.map((number) => +number);
     },
+
+    async saveToFirebase(object) {
+      await db
+        .collection("calculations")
+        .add(object)
+        .then((docRef) => {
+          console.info("Document successfully written: ", docRef.id);
+        })
+        .catch((error) => console.warn(error));
+    },
+
+    async readFromFirebase() {
+      let items = [];
+      await db
+        .collection("calculations")
+        .get()
+        .then((snapshot) => {
+          snapshot.forEach((doc) => {
+            items.push(doc.data());
+          });
+        });
+      return items;
+    },
+
+    onInputChange() {
+      console.log(this.input);
+    },
+
+    /*     async saveToDatabase() {
+      const testObj = {
+        hello: "world",
+        numbers: 12345,
+        testArray: ["Karlsson", "Bert", "Dunderhumor"],
+      };
+
+      db.collection("test")
+        .add(testObj)
+        .then(function (docRef) {
+          console.log("Document written with Id: ", docRef.id);
+        })
+        .catch(function (error) {
+          console.warn("Couldn't write document: ", error);
+        });
+    },
+
+    async readFromDatabase() {
+      db.collection("test")
+        .get()
+        .then((snapshot) => {
+          snapshot.forEach((doc) => {
+            console.log(doc.id, "=>", doc.data());
+          });
+        });
+    }, */
+  },
+  async created() {
+    this.history = await this.readFromFirebase(this.input);
   },
 });

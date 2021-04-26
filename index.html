@@ -34,6 +34,7 @@
         <div class="row">
           <div class="history-list col-6">
             <h4 class="history-title">Historik</h4>
+            <span><input type="text" v-model.lazy="input" @change="onInputChange" />Filtera</span>
             <ul class="list-group">
               <li
                 v-for="({display, operators}, i) of history"
@@ -78,7 +79,11 @@
         </h3>
       </div>
     </div>
-
+    <!--FIREBASE FIRST-->
+    <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js"></script>
+    <!--FIREBASE FIRESTORE-->
+    <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-firestore.js"></script>
+    <!--MAIN.JS-->
     <script src="./src/main.js"></script>
   </body>
 </html>
